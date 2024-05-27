@@ -28,17 +28,20 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class JWTLoginFilter extends AbstractLoginFilter {
+public class CredentialsAuthFilter extends AbstractLoginFilter {
 
     @Resource
     AuthEntryPoint authEntryPoint;
+    
+    @Resource
+    CredentialsAuthProvider credentialsAuthProvider;
 
     /**
      * 通过启动服务时 获取到的登录请求url 创建 AntPathRequestMatcher bean
      *
      * @param antPathRequestMatcher
      */
-    protected JWTLoginFilter(AntPathRequestMatcher antPathRequestMatcher, AuthenticationManager authenticationManager) {
+    protected CredentialsAuthFilter(AntPathRequestMatcher antPathRequestMatcher, AuthenticationManager authenticationManager) {
         super(antPathRequestMatcher);
         this.setAuthenticationManager(authenticationManager);
     }
@@ -54,7 +57,7 @@ public class JWTLoginFilter extends AbstractLoginFilter {
             String password = creds.get(Constants.PASSWORD);
             UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, password);
 
-            Authentication authResult = this.getAuthenticationManager().authenticate(authRequest);
+            Authentication authResult = credentialsAuthProvider.authenticate(authRequest);
             log.debug("Authentication success: {}", authResult);
             if (authResult != null) {
                 SecurityContextHolder.getContext().setAuthentication(authResult);

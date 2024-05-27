@@ -57,13 +57,13 @@ public class CommonFilter extends OncePerRequestFilter {
 
         String token = StrUtil.blankToDefault(request.getHeader("token"), request.getHeader(HttpHeaders.AUTHORIZATION));
         String contentType = request.getContentType();
-        log.info(StrUtil.format("请求头\\n method: {};\\n token: {}; \\n contentType: {};", method, token, contentType));
+        log.info(StrUtil.format("请求头\n method: {};\n token: {}; \n contentType: {};", method, token, contentType));
 
         String params;
         Map<String, String[]> parameterMap = request.getParameterMap();
         if (!MapUtil.isEmpty(parameterMap)) {
             params = JSONUtil.toJsonStr(parameterMap);
-            log.info("请求参数\\n params: {}", params);
+            log.info("请求参数\n params: {}", params);
         }
         //设置跨域
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
@@ -80,7 +80,7 @@ public class CommonFilter extends OncePerRequestFilter {
             MyRequestWrapper requestWrapper = new MyRequestWrapper(request);
             if (contentType != null && StringUtils.startsWithAny(contentType, new String[]{MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})) {
                 params = IOUtils.toString(requestWrapper.getInputStream(), StandardCharsets.UTF_8).replace("\\s+", "");
-                log.info("请求参数\\n params: {}", params);
+                log.info("请求参数\n params: {}", params);
             }
             filterChain.doFilter(request, response);
         }

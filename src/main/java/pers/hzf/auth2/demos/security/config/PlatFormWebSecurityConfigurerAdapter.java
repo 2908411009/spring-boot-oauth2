@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
@@ -25,10 +23,9 @@ import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import pers.hzf.auth2.demos.common.constants.Constants;
 import pers.hzf.auth2.demos.common.enums.UserTypeEnum;
-import pers.hzf.auth2.demos.security.core.authtication.credentials.CredentialsAuthProvider;
 import pers.hzf.auth2.demos.security.core.authtication.gitee.GiteeAuthenticationFilter;
 import pers.hzf.auth2.demos.security.core.filter.AuthTokenFilter;
-import pers.hzf.auth2.demos.security.core.authtication.credentials.JWTLoginFilter;
+import pers.hzf.auth2.demos.security.core.authtication.credentials.CredentialsAuthFilter;
 import pers.hzf.auth2.demos.security.core.handler.MyLogoutHandler;
 import pers.hzf.auth2.demos.security.core.handler.MyLogoutSuccessHandler;
 import pers.hzf.auth2.demos.security.core.authtication.AuthEntryPoint;
@@ -54,7 +51,7 @@ public class PlatFormWebSecurityConfigurerAdapter {
 
     @Lazy
     @Resource
-    JWTLoginFilter jwtLoginFilter;
+    CredentialsAuthFilter credentialsAuthFilter;
 
     @Lazy
     @Resource
@@ -116,7 +113,8 @@ public class PlatFormWebSecurityConfigurerAdapter {
                 .add(front, AuthorityAuthorizationManager.hasAuthority(UserTypeEnum.MEMBER.getCode()))
                 // 限制后台接口 只能管理员用户访问
                 .add(admin, AuthorityAuthorizationManager.hasAuthority(UserTypeEnum.ADMIN.getCode()))
-                .add(any, new AuthenticatedAuthorizationManager())
+//                .add(any, new AuthenticatedAuthorizationManager())
+                .add(any, (authentication, object) -> new AuthorizationDecision(true))
                 .build();
         return (authentication, context) -> manager.check(authentication, context.getRequest());
     }
@@ -152,7 +150,7 @@ public class PlatFormWebSecurityConfigurerAdapter {
                 .access(access);
         // 后台用户认证过滤器 如果需要进行前台用户认证 在微服务环境下 重新实现JWTAuthService接口即可
         // 如果是单体应用 则需要再添加一个 Filter 进行前台账户认证
-        httpSecurity.addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(credentialsAuthFilter, UsernamePasswordAuthenticationFilter.class);
         // gitee认证过滤器 
         httpSecurity.addFilterBefore(giteeAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         // token校验过滤器

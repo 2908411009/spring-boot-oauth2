@@ -49,10 +49,12 @@ public class GiteeAuthServiceImpl extends AbstractUserAuthService {
     @Override
     public UserDetails authenticate(Authentication authentication) {
         log.info("authentication: {}", authentication);
-        String accessToken = (String) authentication.getPrincipal();
+        String userCode = (String) authentication.getPrincipal();
         // 获取gitee用户
         UserInfo userInfo = null;
         try {
+            // 获取 token
+            String accessToken = giteeTemplate.getAccessToken(userCode);
             userInfo = giteeTemplate.getUserInfo(accessToken);
             log.info("gitee user info {}",userInfo);
         } catch (Exception e) {

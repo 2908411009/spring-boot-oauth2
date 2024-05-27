@@ -21,6 +21,7 @@ import pers.hzf.auth2.demos.common.dto.UserDto;
 import pers.hzf.auth2.demos.common.web.R;
 import pers.hzf.auth2.demos.security.core.authtication.AbstractLoginFilter;
 import pers.hzf.auth2.demos.security.core.authtication.AuthEntryPoint;
+import pers.hzf.auth2.demos.security.core.authtication.credentials.CredentialsAuthProvider;
 import pers.hzf.auth2.demos.security.core.service.JWTAuthService;
 import pers.hzf.auth2.demos.security.core.service.UserAuthService;
 
@@ -44,6 +45,10 @@ public class GiteeAuthenticationFilter extends AbstractLoginFilter {
     @Resource
     private AuthEntryPoint authEntryPoint;
 
+
+    @Resource
+    GiteeAuthProvider giteeAuthProvider;
+    
     protected GiteeAuthenticationFilter(AuthenticationManager authenticationManager,OAuth2Config oAuth2Config) {
         super(new AntPathRequestMatcher(URLUtil.getPath(oAuth2Config.getProviderByPlatform(GITEE).getRedirectUri())));
         this.setAuthenticationManager(authenticationManager);
@@ -58,7 +63,6 @@ public class GiteeAuthenticationFilter extends AbstractLoginFilter {
                 // 仅支持Get请求
                 throw new AuthenticationServiceException(StrUtil.format("【Gitee登录】仅支持get请求,当前为{}请求", request.getMethod()));
             }
-//        ?code=c0681f76cb6d0bd72fc54485c8af7e9897726a46ad581641a54b5ffcc2c601f9
             String queryString = request.getQueryString();
             if (StrUtil.isBlank(queryString) || !queryString.contains("code")) {
                 throw new AuthenticationServiceException("【Gitee登录】参数错误");
@@ -66,7 +70,7 @@ public class GiteeAuthenticationFilter extends AbstractLoginFilter {
             String code = queryString.split("=")[1];
             log.info("[gitee]code={}", code);
             GiteeAuthenticationToken token = new GiteeAuthenticationToken(code);
-            Authentication authResult = getAuthenticationManager().authenticate(token);
+            Authentication authResult = giteeAuthProvider.authenticate(token);
             log.debug("【Gitee登录】Authentication success: {}", authResult);
             if (authResult != null) {
                 SecurityContextHolder.getContext().setAuthentication(authResult);
