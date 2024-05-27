@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="logDir" value="/data/logs/oatuh2/spring-boot-oatuh2/"/>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%n%d{HH:mm:ss.SSS} %p [%X{X-B3-TraceId:-} %X{X-B3-SpanId:-}] [%t] [%c{1}:%M:%L] => %.-5000m%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="file.all" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logDir}${spring.profiles.active}/all.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logDir}${spring.profiles.active}/all-%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+            <!--限定单个文件的大小-->
+            <maxFileSize>1GB</maxFileSize>
+            <!--限定归档文件的最大数量,对应filePattern中变量%i-->
+            <maxHistory>24</maxHistory>
+            <!--限定全局所有的归档日志的大小-->
+            <totalSizeCap>100GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%n%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%X{X-B3-TraceId:-} %X{X-B3-SpanId:-}] [%t] [%c{1}:%M:%L] => %.-5000m%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="file.all.async" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>1024</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="file.all"/>
+    </appender>
+
+    <appender name="file.error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logDir}${spring.profiles.active}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logDir}${spring.profiles.active}/error-%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+            <maxHistory>24</maxHistory>
+            <totalSizeCap>100GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%n%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%X{X-B3-TraceId:-} %X{X-B3-SpanId:-}] [%t] [%c{1}:%M:%L] => %.-5000m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <appender name="file.error.async" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>1024</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="file.error"/>
+    </appender>
+
+    <logger name="pers.hzf" level="DEBUG" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file.all.async"/>
+        <appender-ref ref="file.error.async"/>
+    </logger>
+    <root level="warn">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file.all.async"/>
+        <appender-ref ref="file.error.async"/>
+    </root>
+
+</configuration>

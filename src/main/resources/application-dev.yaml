@@ -1,0 +1,46 @@
+spring:
+  # 数据源配置
+  datasource:
+    druid:
+      url: jdbc:mysql://127.0.0.1:3306/oauth2_demo?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&failOverReadOnly=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      initial-size: 5
+      keep-alive: true
+      max-active: 20
+      max-evictable-idle-time-millis: 100000
+      max-wait: 1200
+      min-evictable-idle-time-millis: 30000
+      min-idle: 5
+      phy-timeout-millis: 3600000
+      pool-prepared-statements: false
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 30000
+      validation-query: select 1
+  # redis配置
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: root
+    database: 0
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        max-wait: 10000
+        min-idle: 3
+    timeout: 4500
+
+# 以下是自定义配置
+demo:
+  oauth2:
+    provider:
+      gitee:
+        client-id: 3e3c0abd66487c978b986acafa6fe2679da552ef46b1167asxaxax2222
+        client-secret: f38e65698bda8ff25801af74d5611edadf871682a32fcb4b9b6549asxaxa11111
+        redirect-uri: https://127.0.0.1:19001/api/bg/auth/oauth2/gitee/login
+        authorization-uri: https://gitee.com/oauth/authorize
+        client-name: Gitee

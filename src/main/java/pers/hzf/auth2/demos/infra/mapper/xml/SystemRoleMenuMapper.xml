@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pers.hzf.auth2.demos.infra.mapper.SystemRoleMenuMapper">
+    <select id="selectListByRoleIds" resultType="pers.hzf.auth2.demos.common.web.XGrantedAuthority">
+        select sm.permission as authority
+        from t_system_role_menu srm
+        left join t_system_roles sr on srm.role_id = sr.id
+        left join t_system_menu sm on srm.menu_id = sm.id
+        <where>
+            sr.id in
+            <foreach collection="roleIds" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+            and sr.status = #{roleStatus}
+            and (sm.permission is not null and sm.permission != '')
+        </where>
+    </select>
+</mapper>

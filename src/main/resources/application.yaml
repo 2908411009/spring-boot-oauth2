@@ -1,0 +1,51 @@
+# tomcat 配置
+server:
+  servlet:
+    context-path: /
+  port: 19001
+  compression:
+    enabled: true
+  tomcat:
+    threads:
+      max: 800
+      min-spare: 100
+    max-connections: 10000
+    accept-count: 200
+    keep-alive-timeout: 5000
+    connection-timeout: 5000
+
+spring:
+  profiles:
+    active: prod
+  application:
+    name: spring-boot-oauth2
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: "10MB"
+      max-request-size: "200MB"
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+
+mybatis-plus:
+  configuration:
+    cache-enabled: true
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: full
+    auto-mapping-unknown-column-behavior: none
+  global-config:
+    db-config:
+      id-type: auto
+      table-underline: true
+      logic-delete-field: deletedAt
+      logic-not-delete-value: "null"
+      logic-delete-value: now()
+  mapper-locations: classpath*:pers/hzf/auth2/**/**/mapper/xml/*.xml
+  # 简化resultType包名
+  type-aliases-package: pers.hzf.auth2.demos.infra.po
+
+# 以下是自定义配置
+demo:
+  resources:
+    exclusions: /druid/,/swagger,/v2/api-docs,/webjars/,/static/,/doc.html,/storage/,/actuator/,/resources/,/images/,.gif,.ico,.gif,.bmp,.jpg,.jpeg,.png,.pdf,.txt,.rar,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.flv,.mp3,.mp4,.avi
