@@ -10,6 +10,22 @@ import lombok.Data;
 public class GiteeDto {
 
     @Data
+    public static class AccessToken {
+        private String access_token;
+        private String token_type;
+        private String expires_in;
+        private String refresh_token;
+        private String scope;
+        private String created_at;
+
+        @Override
+        public String toString() {
+            return JSONUtil.toJsonStr(this);
+        }
+
+    }
+
+    @Data
     public static class UserInfo {
         private String avatar_url;
         private String bio;

@@ -61,4 +61,9 @@ public class UserAuthServiceImpl extends AbstractUserAuthService {
         return userDetails;
     }
 
+    @Override
+    public boolean supports(String registrationId) {
+        return false;
+    }
+
 }

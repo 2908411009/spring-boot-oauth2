@@ -35,7 +35,7 @@ public class SystemUserServiceImpl implements SystemUserService {
             systemUsers.setAvatar(userInfo.getAvatar_url());
             systemUsers.setPassword(DigestUtil.bcrypt(RandomUtil.randomString(6)));
             systemUsers.setName(userInfo.getName());
-            systemUsers.setUsername(email);
+            systemUsers.setUsername(userInfo.getLogin());
             systemUsersInfraService.save(systemUsers);
         }
         return systemUsers;

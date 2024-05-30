@@ -33,14 +33,23 @@ spring:
         max-wait: 10000
         min-idle: 3
     timeout: 4500
-
-# 以下是自定义配置
-demo:
-  oauth2:
-    provider:
-      gitee:
-        client-id: 3e3c0abd66487c978b986acafa6fe2679da552ef46b1167asxaxax2222
-        client-secret: f38e65698bda8ff25801af74d5611edadf871682a32fcb4b9b6549asxaxa11111
-        redirect-uri: https://127.0.0.1:19001/api/bg/auth/oauth2/gitee/login
-        authorization-uri: https://gitee.com/oauth/authorize
-        client-name: Gitee
+  security:
+    oauth2:
+      client:
+        provider:
+          gitee:
+            authorization-uri: https://gitee.com/oauth/authorize
+            token-uri: https://gitee.com/oauth/token
+            user-info-uri: https://gitee.com/api/v5/user
+            user-info-authentication-method: GET
+            user-name-attribute: name
+        registration:
+          gitee:
+            client-name: Gitee
+            client-id: 3e3c0abd66487c978b986acafa6f
+            client-secret: f38e65698bda8ff25801af74d
+            redirect-uri: http://127.0.0.1:19001/api/bg/login/oauth2/code/gitee
+            provider: gitee
+            authorization-grant-type: authorization_code
+            scope:
+              - user_info

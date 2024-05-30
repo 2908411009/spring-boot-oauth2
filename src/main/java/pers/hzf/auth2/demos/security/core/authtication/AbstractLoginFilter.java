@@ -40,6 +40,14 @@ public abstract class AbstractLoginFilter extends AbstractAuthenticationProcessi
     @Resource
     UserAuthService userAuthService;
 
+    @Resource
+    protected AuthEntryPoint authEntryPoint;
+
+    
+    protected AbstractLoginFilter(String defaultFilterProcessesUrl) {
+        super(defaultFilterProcessesUrl);
+    }
+
     protected AbstractLoginFilter(AntPathRequestMatcher antPathRequestMatcher) {
         super(antPathRequestMatcher);
     }

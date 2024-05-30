@@ -16,4 +16,6 @@ public interface UserAuthService {
 
     UserDto.LoginRes getLoginRes(String username, String token);
     
+    boolean supports(String registrationId);
+    
 }

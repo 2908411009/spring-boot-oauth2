@@ -1,7 +1,9 @@
 package pers.hzf.auth2.demos.common.servlet;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.servlet.ServletUtil;
@@ -10,6 +12,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
@@ -27,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -163,5 +167,19 @@ public class ServletUtils {
         }
         return Optional.ofNullable(token).orElse(StrUtil.EMPTY);
     }
+
+    public static Map<String, String> getParamMapMultiMethod(HttpServletRequest request) {
+        String method = request.getMethod();
+        String contentType = request.getContentType();
+        if (HttpMethod.POST.matches(method)) {
+            // application/json 请求从body中获取参数
+            if (MediaType.APPLICATION_JSON_VALUE.equals(contentType)) {
+                return BeanUtil.beanToMap(getBodyNotCloseStream(request)).entrySet().stream().map(x -> new Pair<>(x.getKey(), x.getValue().toString())).collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+            }
+        }
+        // post form data or get 请求可以通过request.getParamMap()获取
+        return ServletUtil.getParamMap(request);
+    }
+
 
 }

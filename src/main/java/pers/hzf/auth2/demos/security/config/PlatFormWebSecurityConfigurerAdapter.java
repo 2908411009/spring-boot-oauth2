@@ -6,13 +6,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
@@ -23,7 +26,7 @@ import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import pers.hzf.auth2.demos.common.constants.Constants;
 import pers.hzf.auth2.demos.common.enums.UserTypeEnum;
-import pers.hzf.auth2.demos.security.core.authtication.gitee.GiteeAuthenticationFilter;
+import pers.hzf.auth2.demos.security.core.authtication.oauth2.CommonOAuth2LoginAuthenticationFilter;
 import pers.hzf.auth2.demos.security.core.filter.AuthTokenFilter;
 import pers.hzf.auth2.demos.security.core.authtication.credentials.CredentialsAuthFilter;
 import pers.hzf.auth2.demos.security.core.handler.MyLogoutHandler;
@@ -55,7 +58,7 @@ public class PlatFormWebSecurityConfigurerAdapter {
 
     @Lazy
     @Resource
-    GiteeAuthenticationFilter giteeAuthenticationFilter;
+    CommonOAuth2LoginAuthenticationFilter commonOAuth2LoginAuthenticationFilter;
 
     @Resource
     AuthTokenFilter authTokenFilter;
@@ -73,9 +76,19 @@ public class PlatFormWebSecurityConfigurerAdapter {
     MyLogoutSuccessHandler myLogoutSuccessHandler;
 
 
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
+    /**
+     * 务必自行创建 如果让 Spring Security创建 使用多个 AuthenticationProvider bean 时 会出现StackOverFlow异常
+     * @param authenticationProviders
+     * @return
+     * @throws Exception
+     */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(List<AuthenticationProvider> authenticationProviders) throws Exception {
+        return new ProviderManager(authenticationProviders);
     }
 
     /**
@@ -96,7 +109,9 @@ public class PlatFormWebSecurityConfigurerAdapter {
         requestMatchers.addAll(Arrays.stream(Constants.AuthWhiteList).map(pattern -> new RegexRequestMatcher(pattern, null)).collect(Collectors.toList()));
         // Option请求直接放行
         requestMatchers.add(new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name()));
-
+        // oauth2 放行
+        requestMatchers.add(new AntPathRequestMatcher("/oauth2/authorization/**"));
+        
         // 免登录规则中 匹配一个就放行
         RequestMatcher permitAll = new OrRequestMatcher(requestMatchers);
         // 前台接口匹配规则
@@ -113,8 +128,8 @@ public class PlatFormWebSecurityConfigurerAdapter {
                 .add(front, AuthorityAuthorizationManager.hasAuthority(UserTypeEnum.MEMBER.getCode()))
                 // 限制后台接口 只能管理员用户访问
                 .add(admin, AuthorityAuthorizationManager.hasAuthority(UserTypeEnum.ADMIN.getCode()))
-//                .add(any, new AuthenticatedAuthorizationManager())
-                .add(any, (authentication, object) -> new AuthorizationDecision(true))
+                // 其他接口 校验登录
+                .add(any, new AuthenticatedAuthorizationManager())
                 .build();
         return (authentication, context) -> manager.check(authentication, context.getRequest());
     }
@@ -131,6 +146,8 @@ public class PlatFormWebSecurityConfigurerAdapter {
                 .logoutUrl(platFormWebSecurityProperties.getLogoutUrl())
                 .addLogoutHandler(myLogoutHandler)
                 .logoutSuccessHandler(myLogoutSuccessHandler)
+                .and()
+                .oauth2Login()
                 .and()
                 // 基于 token 机制，所以不需要 Session
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
@@ -152,7 +169,7 @@ public class PlatFormWebSecurityConfigurerAdapter {
         // 如果是单体应用 则需要再添加一个 Filter 进行前台账户认证
         httpSecurity.addFilterBefore(credentialsAuthFilter, UsernamePasswordAuthenticationFilter.class);
         // gitee认证过滤器 
-        httpSecurity.addFilterBefore(giteeAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(commonOAuth2LoginAuthenticationFilter, OAuth2LoginAuthenticationFilter.class);
         // token校验过滤器
         httpSecurity.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();

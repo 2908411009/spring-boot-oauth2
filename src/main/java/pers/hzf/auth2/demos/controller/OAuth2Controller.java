@@ -1,19 +1,15 @@
 package pers.hzf.auth2.demos.controller;
 
-import cn.hutool.core.lang.Assert;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pers.hzf.auth2.demos.common.config.OAuth2Config;
-import pers.hzf.auth2.demos.common.exception.BusinessException;
 import pers.hzf.auth2.demos.common.web.ApiController;
 import pers.hzf.auth2.demos.common.web.R;
 
 import javax.annotation.Resource;
-import java.util.Objects;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author houzhifang
@@ -24,19 +20,12 @@ import java.util.Objects;
 public class OAuth2Controller extends ApiController {
 
     @Resource
-    private OAuth2Config oAuth2Config;
+    private ClientRegistrationRepository clientRegistrationRepository;
 
-    @RequestMapping({"/{platform}"})
-    public R<String> gitee(@PathVariable("platform") String platform) {
-        OAuth2Config.Provider provider = oAuth2Config.getProviderByPlatform(platform);
-        Assert.isTrue(Objects.nonNull(provider), () -> new BusinessException("配置不存在"));
-
-        String clientId = provider.getClientId();
-
-        String authorizationUri = provider.getAuthorizationUri();
-
-        return success(StrUtil.format("{}?client_id={}&redirect_uri={}&response_type=code", authorizationUri
-                , clientId, URLUtil.encode(provider.getRedirectUri())));
+    @RequestMapping({"/{registrationId}"})
+    public R<String> loginQR(@PathVariable("registrationId") String registrationId, HttpServletRequest request, HttpServletResponse response) {
+        // 生成二维码 用于扫码登录
+        return success("https://${qr_code_path}");
     }
 
 }
